@@ -1,0 +1,10 @@
+data/whipple.db
+data/bulletins
+data/logs
+.env
+__pycache__
+.pytest_cache
+*.pyc
+*.egg-info
+.coverage
+htmlcov

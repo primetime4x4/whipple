@@ -1,0 +1,27 @@
+Flask==3.0.3
+SQLAlchemy==2.0.36
+Flask-SQLAlchemy==3.1.1
+alembic==1.14.0
+gunicorn==23.0.0
+
+# AI + APIs
+google-genai==0.4.0
+google-api-python-client==2.149.0
+google-auth==2.36.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+
+# Scraping
+feedparser==6.0.11
+beautifulsoup4==4.12.3
+html5lib==1.1
+requests==2.32.3
+
+# Templating
+Jinja2==3.1.4
+
+# Testing
+pytest==9.0.3
+pytest-flask==1.3.0
+pytest-playwright==0.7.2
+playwright==1.59.0
