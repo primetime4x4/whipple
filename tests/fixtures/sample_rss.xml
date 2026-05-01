@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+<title>Test Source</title><link>https://test.example.com</link>
+<item><title>Oil up 3%</title><link>https://test.example.com/a</link>
+<description>Crude oil prices rose...</description>
+<pubDate>Mon, 28 Apr 2026 10:00:00 GMT</pubDate></item>
+<item><title>Gas down 5%</title><link>https://test.example.com/b</link>
+<description>Natural gas fell on warm weather...</description>
+<pubDate>Tue, 29 Apr 2026 12:00:00 GMT</pubDate></item>
+</channel></rss>
