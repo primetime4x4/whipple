@@ -1,0 +1,25 @@
+services:
+  whipple:
+    build: .
+    image: whipple
+    container_name: whipple
+    ports:
+      - "28813:28813"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PORT=28813
+      - TZ=America/Chicago
+      - WHIPPLE_DATA_DIR=/app/data
+    restart: unless-stopped
+    networks:
+      whipple_net:
+
+networks:
+  whipple_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.64.0.0/24
