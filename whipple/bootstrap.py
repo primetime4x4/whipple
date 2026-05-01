@@ -55,7 +55,7 @@ def main():
 
     # Step 2: mine Whipple archive
     print('Mining Whipple archive (this takes ~5 minutes)...')
-    counter = mine_archive(sample_size=30)
+    counter = mine_archive(sample_size=200)  # mine ALL pre-cutoff bulletins (~116)
     top_domains = [d for d, n in counter.most_common(60)
                    if not d.startswith('cite:') and n >= 3]
 
