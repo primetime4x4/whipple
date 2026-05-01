@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Manual{% endblock %}
+{% block content %}
+<h1>Manual Triggers</h1>
+<p>Each action requires typing the trigger phrase verbatim.</p>
+
+{% for action, label, danger in [
+  ('tick', 'Trigger tick now', False),
+  ('finalize', 'Trigger finalize (compose + send)', True),
+  ('resend', 'Resend last sent bulletin', False),
+  ('skip-week', 'Skip this week (mark all current-week articles SKIPPED)', True),
+] %}
+<section>
+<h2>{{ label }}</h2>
+<form action="/manual/{{ action }}" method="post">
+<label>Trigger phrase: <input type="password" name="phrase" required></label>
+<button type="submit" {% if danger %}class="btn-danger"{% endif %}>Execute</button>
+</form>
+</section>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Archives{% endblock %}
+{% block content %}
+<h1>Bulletin Archive</h1>
+<table>
+<tr><th>Week</th><th>Status</th><th>Articles</th><th>Words</th><th>Sent</th></tr>
+{% for b in bulletins %}
+<tr>
+<td><a href="/archives/{{ b.week_of }}">{{ b.week_of }}</a></td>
+<td>{{ b.status }}</td>
+<td>{{ b.article_count or '-' }}</td>
+<td>{{ b.total_word_count or '-' }}</td>
+<td>{{ b.sent_at or '-' }}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
