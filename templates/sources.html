@@ -1,46 +1,320 @@
 {% extends "base.html" %}
 {% block title %}Sources{% endblock %}
 {% block content %}
-<h1>Sources</h1>
+
+<style>
+  /* ---- Bulk toolbar ---- */
+  .bulk-toolbar {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .bulk-toolbar .toolbar-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #999;
+    margin-right: 4px;
+  }
+  .bulk-btn {
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    color: #444;
+    transition: all 0.1s;
+    white-space: nowrap;
+  }
+  .bulk-btn:hover { background: #f0f0f0; border-color: #aaa; }
+  .bulk-btn.enable { border-color: #27ae60; color: #27ae60; }
+  .bulk-btn.enable:hover { background: #27ae60; border-color: #27ae60; color: #fff; }
+  .bulk-btn.disable { border-color: #999; color: #666; }
+  .bulk-btn.disable:hover { background: #888; border-color: #888; color: #fff; }
+  .active-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: #555;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .active-count strong { color: #c0392b; font-weight: 600; }
+
+  /* ---- Table ---- */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .table-wrap table { width: 100%; border-collapse: collapse; }
+  .table-wrap thead tr { background: #fafafa; border-bottom: 2px solid #e0e0e0; }
+  .table-wrap th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #888;
+    white-space: nowrap;
+    border-bottom: none;
+  }
+  .table-wrap th.col-active-th { text-align: center; }
+  .table-wrap td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    color: #333;
+    border-top: none;
+  }
+  .table-wrap tr:last-child td { border-bottom: none; }
+  .table-wrap tr:hover td { background: #fcfcfc; }
+  .table-wrap td.col-name a { color: #1a1a1a; text-decoration: none; font-weight: 500; }
+  .table-wrap td.col-name a:hover { color: #c0392b; text-decoration: underline; }
+  .table-wrap td.col-type { font-family: 'Menlo', 'Consolas', monospace; font-size: 11px; color: #777; }
+  .table-wrap td.col-hint { font-size: 12px; color: #888; font-style: italic; }
+  .table-wrap td.col-weight { font-variant-numeric: tabular-nums; color: #555; font-size: 13px; }
+  .table-wrap td.col-notes { font-size: 11px; color: #999; }
+  .table-wrap td.col-ts { font-size: 11px; color: #888; white-space: nowrap; }
+  .table-wrap td.col-fail { font-size: 12px; text-align: right; }
+  .table-wrap td.col-fail.has-fails { color: #c0392b; font-weight: 600; }
+  .table-wrap td.col-origin { font-size: 11px; }
+  .table-wrap td.col-active-td { text-align: center; }
+  .dash-cell { color: #ccc; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .badge-modern  { background: #eaf4fb; color: #2471a3; }
+  .badge-archive { background: #fdf5e6; color: #935116; }
+  .badge-manual  { background: #f3f3f3; color: #666; }
+
+  /* ---- Master toggle header ---- */
+  .master-th-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .master-label-text {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #888;
+  }
+
+  /* ---- Material toggle ---- */
+  .material-toggle-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .material-toggle {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 14px;
+    background: #bdbdbd;
+    border-radius: 14px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .material-toggle.on {
+    background: rgba(192, 57, 43, 0.38);
+  }
+  .material-toggle .knob {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s;
+    pointer-events: none;
+  }
+  .material-toggle.on .knob {
+    transform: translate(16px, -50%);
+    background: #c0392b;
+    box-shadow: 0 2px 4px rgba(192,57,43,0.4), 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  /* ---- New source form ---- */
+  .new-source-section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .new-source-section h2 { font-size: 14px; margin-bottom: 12px; }
+  .new-source-section p { margin-bottom: 8px; }
+  .new-source-section input, .new-source-section select {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    margin-left: 6px;
+  }
+  .new-source-section button[type="submit"] {
+    background: #c0392b;
+    color: #fff;
+    border: 0;
+    padding: 5px 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+</style>
+
+{% set active_count = sources | selectattr('active') | list | length %}
 
 {% if new_form %}
-<h2>New source</h2>
-<form action="/sources/new" method="post">
-<p><label>Name <input name="name" required></label></p>
-<p><label>URL <input name="url" type="url" required></label></p>
-<p><label>Type
-<select name="source_type">
-<option value="rss" selected>rss</option>
-<option value="scraper">scraper</option>
-<option value="manual">manual</option>
-</select>
-</label></p>
-<p><label>Section hint <input name="section_hint" placeholder="energy_prices, climate, ..."></label></p>
-<p><label>Weight <input name="weight" type="number" step="0.1" value="1.0"></label></p>
-<p><button type="submit">Create</button> <a href="/sources">cancel</a></p>
-</form>
-{% else %}
-<a href="/sources/new">+ New source</a>
+<div class="new-source-section">
+  <h2>New source</h2>
+  <form action="/sources/new" method="post">
+  <p><label>Name <input name="name" required></label></p>
+  <p><label>URL <input name="url" type="url" required></label></p>
+  <p><label>Type
+  <select name="source_type">
+  <option value="rss" selected>rss</option>
+  <option value="scraper">scraper</option>
+  <option value="manual">manual</option>
+  </select>
+  </label></p>
+  <p><label>Section hint <input name="section_hint" placeholder="energy_prices, climate, ..."></label></p>
+  <p><label>Weight <input name="weight" type="number" step="0.1" value="1.0"></label></p>
+  <p><button type="submit">Create</button> <a href="/sources">cancel</a></p>
+  </form>
+</div>
 {% endif %}
 
-<table>
-<tr><th>Name</th><th>Type</th><th>Section hint</th><th>Weight</th><th>Active</th><th>Last success</th><th>Failures</th><th>Origin</th><th>Action</th></tr>
-{% for s in sources or [] %}
-<tr>
-<td><a href="{{ s.url }}">{{ s.name }}</a></td>
-<td>{{ s.source_type }}</td>
-<td>{{ s.section_hint or '-' }}</td>
-<td>{{ s.weight }}</td>
-<td>{{ "Y" if s.active else "N" }}</td>
-<td>{{ s.last_success_at or '-' }}</td>
-<td class="{% if s.consecutive_failures > 0 %}error{% endif %}">{{ s.consecutive_failures }}</td>
-<td>{{ s.origin }}</td>
-<td>
-<form action="/sources/{{ s.id }}/toggle" method="post" style="display:inline">
-<button type="submit">{{ "Disable" if s.active else "Enable" }}</button>
-</form>
-</td>
-</tr>
-{% endfor %}
-</table>
+<div class="bulk-toolbar">
+  <span class="toolbar-label">Bulk:</span>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="enable_all">
+    <button type="submit" class="bulk-btn enable">Enable all</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="disable_all">
+    <button type="submit" class="bulk-btn disable">Disable all</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="enable_modern">
+    <button type="submit" class="bulk-btn enable">Enable modern</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="enable_whipple_rss">
+    <button type="submit" class="bulk-btn enable">Enable Whipple RSS</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="disable_whipple">
+    <button type="submit" class="bulk-btn disable">Disable Whipple-archive</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="disable_noise">
+    <button type="submit" class="bulk-btn disable">Disable noise (share buttons)</button>
+  </form>
+
+  <form action="/sources/bulk" method="post" style="display:inline">
+    <input type="hidden" name="action" value="disable_defunct">
+    <button type="submit" class="bulk-btn disable">Disable defunct</button>
+  </form>
+
+  <span class="active-count">
+    <strong>{{ active_count }}</strong> of {{ sources | length }} sources active
+  </span>
+
+  {% if not new_form %}
+  <a href="/sources/new" style="margin-left:8px; font-size:12px; color:#c0392b; text-decoration:none; font-weight:500;">+ New source</a>
+  {% endif %}
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Section hint</th>
+        <th>Weight</th>
+        <th>Notes</th>
+        <th>Last success</th>
+        <th style="text-align:right;">Failures</th>
+        <th>Origin</th>
+        <th class="col-active-th">
+          <div class="master-th-inner">
+            {% set all_active = sources|length > 0 and (sources | rejectattr('active') | list | length == 0) %}
+            <form action="/sources/bulk" method="post" style="display:inline">
+              <input type="hidden" name="action" value="{{ 'disable_all' if all_active else 'enable_all' }}">
+              <button type="submit" class="material-toggle-btn" aria-label="Toggle all sources">
+                <span class="material-toggle{% if all_active %} on{% endif %}"><span class="knob"></span></span>
+              </button>
+            </form>
+            <span class="master-label-text">All</span>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for s in sources or [] %}
+      <tr>
+        <td class="col-name"><a href="{{ s.url }}" target="_blank" rel="noopener noreferrer">{{ s.name }}</a></td>
+        <td class="col-type">{{ s.source_type }}</td>
+        <td class="col-hint">{% if s.section_hint %}{{ s.section_hint }}{% else %}<span class="dash-cell">-</span>{% endif %}</td>
+        <td class="col-weight">{{ s.weight }}</td>
+        <td class="col-notes">{% if s.notes %}{{ s.notes[:40] }}{% if s.notes|length > 40 %}...{% endif %}{% else %}<span class="dash-cell">-</span>{% endif %}</td>
+        <td class="col-ts">{{ s.last_success_at or '-' }}</td>
+        <td class="col-fail {% if s.consecutive_failures > 0 %}has-fails{% endif %}" style="text-align:right;">{{ s.consecutive_failures }}</td>
+        <td class="col-origin">
+          {% if s.origin == 'modern' %}<span class="badge badge-modern">modern</span>
+          {% elif s.origin == 'whipple-archive' %}<span class="badge badge-archive">archive</span>
+          {% else %}<span class="badge badge-manual">{{ s.origin }}</span>{% endif %}
+        </td>
+        <td class="col-active-td">
+          <form action="/sources/{{ s.id }}/toggle" method="post" style="display:inline">
+            <button type="submit" class="material-toggle-btn" aria-label="Toggle {{ s.name }}">
+              <span class="material-toggle{% if s.active %} on{% endif %}"><span class="knob"></span></span>
+            </button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 {% endblock %}

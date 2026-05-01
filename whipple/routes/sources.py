@@ -1,5 +1,5 @@
 """/sources - source list management."""
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for
 from whipple.db import get_session
 from whipple.models import Source
 
@@ -40,3 +40,37 @@ def new_source():
         s.commit()
         return redirect(url_for('sources.list_sources'))
     return render_template('sources.html', new_form=True)
+
+
+@bp.route('/sources/bulk', methods=['POST'])
+def bulk_action():
+    action = request.form.get('action', '')
+    s = get_session()
+    n = 0
+    if action == 'enable_all':
+        n = s.query(Source).update({'active': 1, 'consecutive_failures': 0}, synchronize_session=False)
+    elif action == 'disable_all':
+        n = s.query(Source).update({'active': 0}, synchronize_session=False)
+    elif action == 'enable_modern':
+        n = s.query(Source).filter(Source.origin == 'modern').update(
+            {'active': 1, 'consecutive_failures': 0}, synchronize_session=False)
+    elif action == 'enable_whipple_rss':
+        defunct = ('energybulletin.org', 'daily.energybulletin.org')
+        n = s.query(Source).filter(
+            Source.origin == 'whipple-archive',
+            Source.source_type == 'rss',
+            ~Source.name.in_(defunct),
+        ).update({'active': 1, 'consecutive_failures': 0}, synchronize_session=False)
+    elif action == 'disable_whipple':
+        n = s.query(Source).filter(Source.origin == 'whipple-archive').update(
+            {'active': 0}, synchronize_session=False)
+    elif action == 'disable_noise':
+        noise = ('bsky.app', 'facebook.com', 'x.com', 'linkedin.com')
+        n = s.query(Source).filter(Source.name.in_(noise)).update(
+            {'active': 0}, synchronize_session=False)
+    elif action == 'disable_defunct':
+        defunct = ('energybulletin.org', 'daily.energybulletin.org')
+        n = s.query(Source).filter(Source.name.in_(defunct)).update(
+            {'active': 0}, synchronize_session=False)
+    s.commit()
+    return redirect(url_for('sources.list_sources'))
