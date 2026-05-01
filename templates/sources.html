@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+{% block content %}
+<h1>Sources</h1>
+
+{% if new_form %}
+<h2>New source</h2>
+<form action="/sources/new" method="post">
+<p><label>Name <input name="name" required></label></p>
+<p><label>URL <input name="url" type="url" required></label></p>
+<p><label>Type
+<select name="source_type">
+<option value="rss" selected>rss</option>
+<option value="scraper">scraper</option>
+<option value="manual">manual</option>
+</select>
+</label></p>
+<p><label>Section hint <input name="section_hint" placeholder="energy_prices, climate, ..."></label></p>
+<p><label>Weight <input name="weight" type="number" step="0.1" value="1.0"></label></p>
+<p><button type="submit">Create</button> <a href="/sources">cancel</a></p>
+</form>
+{% else %}
+<a href="/sources/new">+ New source</a>
+{% endif %}
+
+<table>
+<tr><th>Name</th><th>Type</th><th>Section hint</th><th>Weight</th><th>Active</th><th>Last success</th><th>Failures</th><th>Origin</th><th>Action</th></tr>
+{% for s in sources or [] %}
+<tr>
+<td><a href="{{ s.url }}">{{ s.name }}</a></td>
+<td>{{ s.source_type }}</td>
+<td>{{ s.section_hint or '-' }}</td>
+<td>{{ s.weight }}</td>
+<td>{{ "Y" if s.active else "N" }}</td>
+<td>{{ s.last_success_at or '-' }}</td>
+<td class="{% if s.consecutive_failures > 0 %}error{% endif %}">{{ s.consecutive_failures }}</td>
+<td>{{ s.origin }}</td>
+<td>
+<form action="/sources/{{ s.id }}/toggle" method="post" style="display:inline">
+<button type="submit">{{ "Disable" if s.active else "Enable" }}</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

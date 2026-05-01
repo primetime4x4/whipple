@@ -1,7 +1,7 @@
 """Flask factory."""
 from flask import Flask
 from whipple.db import init_db
-from whipple.routes import health
+from whipple.routes import health, sources
 import config
 
 
@@ -10,6 +10,7 @@ def create_app():
     app.config['SECRET_KEY'] = config.SECRET_KEY
     init_db()
     app.register_blueprint(health.bp)
+    app.register_blueprint(sources.bp)
     return app
 
 
