@@ -1,0 +1,10 @@
+body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.5; }
+.topnav { display: flex; gap: 1.5rem; padding: 1rem 0; border-bottom: 2px solid #333; margin-bottom: 2rem; }
+.topnav a { text-decoration: none; color: #333; font-weight: 500; }
+.topnav .brand { font-weight: 700; font-size: 1.2rem; color: #c0392b; }
+section { margin-bottom: 2rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
+.btn-danger { background: #c0392b; color: #fff; border: 0; padding: 0.5rem 1rem; cursor: pointer; }
+.error { color: #c0392b; }
+.success { color: #27ae60; }

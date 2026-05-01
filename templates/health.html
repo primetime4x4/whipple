@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Health{% endblock %}
+{% block content %}
+<h1>Pipeline Health</h1>
+
+<section>
+<h2>Article counts (current week)</h2>
+<ul>
+{% for state, n in counts.items() %}
+  <li><strong>{{ state }}:</strong> {{ n }}</li>
+{% endfor %}
+</ul>
+</section>
+
+<section>
+<h2>Gemini usage</h2>
+<p>Last 1 min: {{ gemini_1m }} / {{ rpm_limit }} RPM</p>
+<p>Last 24h: {{ gemini_24h }} / {{ rpd_limit }} RPD</p>
+</section>
+
+<section>
+<h2>Last 5 runs</h2>
+<table>
+<tr><th>Started</th><th>Mode</th><th>Success</th><th>Articles advanced</th></tr>
+{% for r in runs %}
+<tr>
+<td>{{ r.started_at }}</td>
+<td>{{ r.mode }}</td>
+<td>{{ "OK" if r.success else "FAIL" }}</td>
+<td>S:{{ r.articles_scraped }} C:{{ r.articles_classified }} U:{{ r.articles_summarized }}</td>
+</tr>
+{% endfor %}
+</table>
+</section>
+
+<section>
+<h2>Failing sources</h2>
+{% if failing %}
+<ul>
+{% for s in failing %}
+<li><strong>{{ s.name }}</strong> - {{ s.consecutive_failures }} consecutive failures (last checked {{ s.last_checked_at }})</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>All sources healthy.</p>
+{% endif %}
+</section>
+{% endblock %}

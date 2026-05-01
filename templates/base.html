@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Whipple{% endblock %} - Energy Bulletin</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<nav class="topnav">
+  <a href="/" class="brand">Whipple</a>
+  <a href="/archives">Archives</a>
+  <a href="/sources">Sources</a>
+  <a href="/health">Health</a>
+  <a href="/manual">Manual</a>
+</nav>
+<main>{% block content %}{% endblock %}</main>
+</body>
+</html>
