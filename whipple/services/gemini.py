@@ -55,7 +55,6 @@ class GeminiClient:
         try:
             self._check_rate_limits(session)
         except GeminiRateLimitExceeded:
-            session.close()
             raise
 
         last_exc = None
@@ -69,7 +68,6 @@ class GeminiClient:
                 output_tokens = resp.usage_metadata.candidates_token_count if hasattr(resp, 'usage_metadata') else 0
                 self._log_call(session, stage, model, input_tokens, output_tokens,
                                latency, article_id, bulletin_id, True)
-                session.close()
                 return text
             except Exception as e:
                 last_exc = e
@@ -79,5 +77,4 @@ class GeminiClient:
         # all retries exhausted
         self._log_call(session, stage, model, 0, 0, 0, article_id, bulletin_id,
                        False, str(last_exc))
-        session.close()
         raise last_exc
