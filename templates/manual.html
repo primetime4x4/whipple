@@ -7,14 +7,14 @@
 {% for action, label, danger in [
   ('tick', 'Trigger tick now', False),
   ('finalize', 'Trigger finalize (compose + send)', True),
-  ('resend', 'Resend last sent bulletin', False),
+  ('resend', 'Resend last sent bulletin', True),
   ('skip-week', 'Skip this week (mark all current-week articles SKIPPED)', True),
 ] %}
 <section>
 <h2>{{ label }}</h2>
 <form action="/manual/{{ action }}" method="post">
 <label>Trigger phrase: <input type="password" name="phrase" required></label>
-<button type="submit" {% if danger %}class="btn-danger"{% endif %}>Execute</button>
+<button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-safe{% endif %}">Execute</button>
 </form>
 </section>
 {% endfor %}
