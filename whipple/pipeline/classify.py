@@ -9,7 +9,7 @@ import json
 import time
 import urllib.request
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select
 from whipple.models import Article, GeminiCall
 from whipple.services.gemini import GeminiClient, GeminiRateLimitExceeded
@@ -152,7 +152,7 @@ def classify(session, batch_size: int = 10, gemini: GeminiClient = None) -> dict
         else:
             art.state = 'CLASSIFIED'
             art.section = section_raw
-            art.classified_at = datetime.utcnow()
+            art.classified_at = datetime.now(timezone.utc).replace(tzinfo=None)
             classified += 1
 
     session.commit()

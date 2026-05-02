@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from whipple.models import Source, Article
 from whipple.pipeline.select import select
 from whipple.pipeline import scrape as scrape_mod
@@ -13,7 +13,7 @@ def test_select_picks_top_n_per_section(session, monkeypatch):
     for i in range(15):
         a = Article(source_id=src.id, url=f'https://s.com/{i}', title=f'Story {i}',
                     state='CLASSIFIED', section='energy_prices', week_of='2099-01-04',
-                    published_at=datetime.utcnow() - timedelta(hours=i))
+                    published_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=i))
         session.add(a)
     session.commit()
 
@@ -32,10 +32,10 @@ def test_select_respects_recency_for_ordering(session, monkeypatch):
 
     old = Article(source_id=src.id, url='https://s.com/old', title='Old story',
                   state='CLASSIFIED', section='climate', week_of='2099-01-04',
-                  published_at=datetime.utcnow() - timedelta(days=6))
+                  published_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=6))
     new = Article(source_id=src.id, url='https://s.com/new', title='New story',
                   state='CLASSIFIED', section='climate', week_of='2099-01-04',
-                  published_at=datetime.utcnow() - timedelta(hours=2))
+                  published_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2))
     session.add_all([old, new]); session.commit()
 
     select(session)
@@ -51,11 +51,11 @@ def test_select_diversity_penalty_drops_near_duplicate(session, monkeypatch):
     a = Article(source_id=src.id, url='https://s.com/a',
                 title='Saudi Aramco profits surge in Q1',
                 state='CLASSIFIED', section='energy_prices', week_of='2099-01-04',
-                published_at=datetime.utcnow())
+                published_at=datetime.now(timezone.utc).replace(tzinfo=None))
     b = Article(source_id=src.id, url='https://s.com/b',
                 title='Saudi Aramco profits surge in Q1 report',
                 state='CLASSIFIED', section='energy_prices', week_of='2099-01-04',
-                published_at=datetime.utcnow())
+                published_at=datetime.now(timezone.utc).replace(tzinfo=None))
     session.add_all([a, b]); session.commit()
 
     select(session)

@@ -1,5 +1,5 @@
 """scrape() stage - pull RSS + scrape sources, dedupe by URL."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import feedparser
 import requests
@@ -93,11 +93,11 @@ def scrape(session) -> dict:
                     ))
                     inserted += 1
 
-            source.last_checked_at = datetime.utcnow()
-            source.last_success_at = datetime.utcnow()
+            source.last_checked_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            source.last_success_at = datetime.now(timezone.utc).replace(tzinfo=None)
             source.consecutive_failures = 0
         except Exception as e:
-            source.last_checked_at = datetime.utcnow()
+            source.last_checked_at = datetime.now(timezone.utc).replace(tzinfo=None)
             source.consecutive_failures += 1
             if source.consecutive_failures >= 3:
                 source.active = 0

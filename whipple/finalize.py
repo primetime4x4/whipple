@@ -1,7 +1,7 @@
 """Sunday 9pm finalize - runs compose() + sends email."""
 import sys
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from whipple.db import get_session
 from whipple.models import Run, Bulletin
 from whipple.pipeline.compose import compose
@@ -27,7 +27,7 @@ def _notify(severity: str, title: str, body: str) -> None:
 
 def main():
     session = get_session()
-    run = Run(mode='finalize', started_at=datetime.utcnow())
+    run = Run(mode='finalize', started_at=datetime.now(timezone.utc).replace(tzinfo=None))
     session.add(run); session.commit()
 
     try:
@@ -47,7 +47,7 @@ def main():
         msg_id = send_bulletin(subject=subject, html=bulletin.html_content)
 
         bulletin.status = 'SENT'
-        bulletin.sent_at = datetime.utcnow()
+        bulletin.sent_at = datetime.now(timezone.utc).replace(tzinfo=None)
         run.articles_composed = r['composed']
         run.success = 1
         session.commit()
@@ -59,7 +59,7 @@ def main():
         run.error_message = str(e)[:500]
         _notify('warn', 'Whipple bulletin FAILED', str(e)[:500])
     finally:
-        run.finished_at = datetime.utcnow()
+        run.finished_at = datetime.now(timezone.utc).replace(tzinfo=None)
         session.commit()
         session.close()
 

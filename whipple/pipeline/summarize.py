@@ -4,7 +4,7 @@ Default backend: local Ollama (gemma3:4b) when OLLAMA_URL is set. Falls back to
 Gemini on network failure. Whipple's free-tier Gemini quota cannot cover the
 40-50 summarize calls a typical bulletin needs.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select as sa_select
 from whipple.models import Article, Source, GeminiCall
 from whipple.services.gemini import GeminiClient, GeminiRateLimitExceeded
@@ -81,7 +81,7 @@ def summarize(session, batch_size: int = 5, gemini: GeminiClient = None) -> dict
             text = _linkify_source(text, src.name, art.url)
             art.summary_text = text
             art.state = 'SUMMARIZED'
-            art.summarized_at = datetime.utcnow()
+            art.summarized_at = datetime.now(timezone.utc).replace(tzinfo=None)
             summarized += 1
         except GeminiRateLimitExceeded:
             break

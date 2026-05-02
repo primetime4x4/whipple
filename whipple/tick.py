@@ -1,6 +1,6 @@
 """Main orchestrator - runs every cron tick."""
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from whipple.db import get_session
 from whipple.models import Run, Article
 from whipple.pipeline.scrape import scrape, current_sunday_ct
@@ -23,7 +23,7 @@ def _select_already_ran_for_week(session, week: str) -> bool:
 
 def main():
     session = get_session()
-    run = Run(mode='tick', started_at=datetime.utcnow())
+    run = Run(mode='tick', started_at=datetime.now(timezone.utc).replace(tzinfo=None))
     session.add(run); session.commit()
 
     try:
@@ -51,7 +51,7 @@ def main():
         run.success = 0
         run.error_message = str(e)[:500]
     finally:
-        run.finished_at = datetime.utcnow()
+        run.finished_at = datetime.now(timezone.utc).replace(tzinfo=None)
         session.commit()
         _success = run.success  # capture before close() expires ORM attrs
         session.close()

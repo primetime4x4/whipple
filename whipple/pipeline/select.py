@@ -1,5 +1,5 @@
 """select() stage - heuristic ranking + top N per section."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import select as sa_select
 from whipple.models import Article, Source
 from whipple.pipeline import scrape as scrape_mod
@@ -37,7 +37,7 @@ def _diversity_penalty(article: Article, already_selected: list) -> float:
 def select(session) -> dict:
     """Run selection for current week. Sets SELECTED / SKIPPED states."""
     week = scrape_mod.current_sunday_ct()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     counts = {section: 0 for section in SECTION_QUOTAS}
 

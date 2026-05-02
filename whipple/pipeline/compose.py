@@ -11,7 +11,7 @@ Quotes of the Week and Graphic of the Week sections are skipped for now;
 they can be added later via heuristic extraction from raw_content (regex
 for quoted sentences, regex for first <img>) without an LLM call.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select as sa_select
 from whipple.models import Article, Bulletin, Source
 from whipple.services.gemini import GeminiClient
@@ -86,7 +86,7 @@ def compose(session, gemini: GeminiClient = None) -> dict:
     )
 
     bulletin = Bulletin(
-        week_of=week, status='COMPOSED', generated_at=datetime.utcnow(),
+        week_of=week, status='COMPOSED', generated_at=datetime.now(timezone.utc).replace(tzinfo=None),
         html_content=html,
         article_count=article_count, total_word_count=total_words,
     )

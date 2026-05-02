@@ -1,5 +1,5 @@
 """Rate limiter behavior."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytest
 from whipple.models import GeminiCall
 from whipple.services.gemini import GeminiClient, GeminiRateLimitExceeded
@@ -7,7 +7,7 @@ from whipple.services.gemini import GeminiClient, GeminiRateLimitExceeded
 
 def test_rate_limit_blocks_at_rpm_threshold(session, monkeypatch):
     # Insert 14 recent gemini_calls
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     for i in range(14):
         session.add(GeminiCall(stage='classify', model='flash',
                                called_at=now - timedelta(seconds=i*2)))
@@ -22,7 +22,7 @@ def test_rate_limit_blocks_at_rpm_threshold(session, monkeypatch):
 
 def test_rate_limit_passes_below_threshold(session, monkeypatch):
     # Insert 5 recent gemini_calls (below 14 RPM)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     for i in range(5):
         session.add(GeminiCall(stage='classify', model='flash',
                                called_at=now - timedelta(seconds=i*2)))

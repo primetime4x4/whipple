@@ -1,5 +1,5 @@
 """/health route - pipeline status dashboard."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template
 from sqlalchemy import func, select
 from whipple.db import get_session
@@ -12,7 +12,7 @@ bp = Blueprint('health', __name__)
 @bp.route('/health')
 def health():
     s = get_session()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     last_24h = now - timedelta(days=1)
     last_min = now - timedelta(minutes=1)
 

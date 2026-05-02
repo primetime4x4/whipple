@@ -1,6 +1,6 @@
 """Gemini API wrapper with rate limiting + retry + call logging."""
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import google.genai as genai
 from sqlalchemy import func, select
@@ -19,7 +19,7 @@ class GeminiClient:
 
     def _check_rate_limits(self, session) -> None:
         """Raise GeminiRateLimitExceeded if RPM or RPD breached."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         rpm = session.execute(
             select(func.count()).select_from(GeminiCall).where(
                 GeminiCall.called_at > now - timedelta(minutes=1)

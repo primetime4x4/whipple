@@ -1,5 +1,5 @@
 """Render bulletin HTML from compose() output."""
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -16,7 +16,7 @@ def render_bulletin(week_of: str, assembled_html: str, quote_a: str,
         quote_a=quote_a, quote_b=quote_b, graphic_url=graphic_url,
         graphic_caption=graphic_caption, article_count=article_count,
         total_word_count=total_word_count,
-        generated_at=datetime.utcnow().isoformat(timespec='seconds'),
+        generated_at=datetime.now(timezone.utc).replace(tzinfo=None).isoformat(timespec='seconds'),
     )
 
 
