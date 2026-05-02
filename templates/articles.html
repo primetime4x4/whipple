@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Articles{% endblock %}
+{% block content %}
+
+<style>
+  .articles-filters {
+    background: var(--page-bg);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .articles-filters label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+  }
+  .articles-filters select,
+  .articles-filters input[type="text"] {
+    padding: 4px 8px;
+    border: 1px solid var(--rule);
+    background: var(--page-bg);
+    color: var(--ink);
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  .articles-filters input[type="text"] { min-width: 200px; }
+  .articles-filters .filter-meta {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .articles-filters .filter-meta strong { color: var(--accent); font-weight: 600; }
+
+  .articles-wrap {
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .articles-wrap table { width: 100%; border-collapse: collapse; }
+  .articles-wrap thead tr { background: rgba(255,255,255,0.04); border-bottom: 2px solid var(--rule); }
+  .articles-wrap th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .articles-wrap td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .articles-wrap tr:last-child td { border-bottom: none; }
+  .articles-wrap tr:hover td { background: rgba(255,255,255,0.03); }
+  .col-when { color: var(--muted); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .col-title a { color: var(--ink); text-decoration: none; font-weight: 500; }
+  .col-title a:hover { color: var(--accent); text-decoration: underline; }
+  .col-source { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .col-section { font-size: 11px; color: var(--muted); font-style: italic; }
+  .col-score { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
+  .col-week { color: var(--muted); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .col-summary { color: var(--muted); font-size: 12px; max-width: 360px; }
+
+  .state-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .state-SCRAPED    { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+  .state-CLASSIFIED { background: rgba(168,85,247,0.15);  color: #c084fc; }
+  .state-SELECTED   { background: rgba(74,222,128,0.15);  color: #4ade80; }
+  .state-SUMMARIZED { background: rgba(34,197,94,0.18);   color: #22c55e; }
+  .state-COMPOSED   { background: rgba(34,197,94,0.25);   color: #4ade80; }
+  .state-IRRELEVANT { background: rgba(136,136,136,0.15); color: var(--muted); }
+  .state-SKIPPED    { background: rgba(245,158,11,0.15);  color: #f59e0b; }
+  .state-FAILED     { background: rgba(239,68,68,0.18);   color: #f87171; }
+
+  .empty-row td {
+    text-align: center;
+    color: var(--muted);
+    font-style: italic;
+    padding: 24px 12px;
+  }
+
+  .reset-link {
+    color: var(--accent);
+    font-size: 11px;
+    text-decoration: none;
+    margin-left: 4px;
+  }
+  .reset-link:hover { text-decoration: underline; }
+</style>
+
+<h1>Articles</h1>
+
+<form method="get" class="articles-filters">
+  <label for="f-state">State:</label>
+  <select id="f-state" name="state">
+    <option value="">all</option>
+    {% for st in states %}
+      <option value="{{ st }}" {% if filter_state == st %}selected{% endif %}>{{ st }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="f-week">Week:</label>
+  <select id="f-week" name="week">
+    <option value="">all</option>
+    {% for w in weeks %}
+      <option value="{{ w }}" {% if filter_week == w %}selected{% endif %}>{{ w }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="f-source">Source:</label>
+  <select id="f-source" name="source_id">
+    <option value="">all</option>
+    {% for src in sources %}
+      <option value="{{ src.id }}" {% if filter_source_id == src.id %}selected{% endif %}>{{ src.name }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="f-q">Search:</label>
+  <input id="f-q" name="q" type="text" value="{{ filter_search }}" placeholder="title or summary">
+
+  <button type="submit" class="btn btn-safe">Apply</button>
+  {% if filter_state or filter_week or filter_source_id or filter_search %}
+    <a href="/articles" class="reset-link">reset</a>
+  {% endif %}
+
+  <span class="filter-meta">
+    Showing <strong>{{ showing }}</strong> of {{ total }}
+    {% if total > showing %}<span style="opacity:0.7"> (limit {{ limit }})</span>{% endif %}
+  </span>
+</form>
+
+<div class="articles-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Scraped</th>
+        <th>Title</th>
+        <th>Source</th>
+        <th>State</th>
+        <th>Section</th>
+        <th>Score</th>
+        <th>Week</th>
+        <th>Summary</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if not articles %}
+        <tr class="empty-row"><td colspan="8">No articles match these filters.</td></tr>
+      {% endif %}
+      {% for a in articles %}
+        <tr>
+          <td class="col-when">{{ a.scraped_at.strftime('%m-%d %H:%M') if a.scraped_at else '-' }}</td>
+          <td class="col-title">
+            {% if a.url %}
+              <a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.title or '(untitled)' }}</a>
+            {% else %}
+              {{ a.title or '(untitled)' }}
+            {% endif %}
+          </td>
+          <td class="col-source">{{ a.source.name if a.source else '-' }}</td>
+          <td><span class="state-pill state-{{ a.state }}">{{ a.state }}</span></td>
+          <td class="col-section">{{ a.section or '-' }}</td>
+          <td class="col-score">{{ '%.2f'|format(a.score) if a.score is not none else '-' }}</td>
+          <td class="col-week">{{ a.week_of }}</td>
+          <td class="col-summary">{{ (a.summary_text[:160] + '…') if a.summary_text and a.summary_text|length > 160 else (a.summary_text or '-') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
