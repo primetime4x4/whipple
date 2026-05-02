@@ -43,3 +43,6 @@ SECTION_DISPLAY = {
 # Rate limits
 GEMINI_RPM_LIMIT = 14  # margin under 15
 GEMINI_RPD_LIMIT = 1450  # margin under 1500
+
+# Ollama (local LLM on PC-SL) - used by classify when set
+OLLAMA_URL = os.getenv("OLLAMA_URL", "")

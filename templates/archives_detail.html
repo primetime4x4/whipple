@@ -1,5 +1,34 @@
 {% extends "base.html" %}
 {% block title %}{{ bulletin.week_of }}{% endblock %}
 {% block content %}
-{{ bulletin.html_content|safe }}
+<style>
+  .bulletin-frame {
+    width: 100%;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: #fff;
+  }
+  .bulletin-meta {
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .bulletin-meta a { color: var(--accent); text-decoration: none; }
+  .bulletin-meta a:hover { text-decoration: underline; }
+  .bulletin-meta strong { color: var(--ink); }
+</style>
+<div class="bulletin-meta">
+  <span>Week of <strong>{{ bulletin.week_of }}</strong></span>
+  <span>Status: {{ bulletin.status }}</span>
+  {% if bulletin.article_count %}<span>{{ bulletin.article_count }} stories</span>{% endif %}
+  {% if bulletin.total_word_count %}<span>{{ bulletin.total_word_count }} words</span>{% endif %}
+  <a href="/archives/{{ bulletin.week_of }}/raw" target="_blank">Open in new tab &rarr;</a>
+</div>
+<iframe class="bulletin-frame" src="/archives/{{ bulletin.week_of }}/raw"></iframe>
 {% endblock %}
