@@ -356,3 +356,11 @@ th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--rule)
   margin: 0 0 8px;
   line-height: 1.55;
 }
+
+.action-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0.4rem 0 0.8rem;
+  max-width: 720px;
+}

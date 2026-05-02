@@ -4,17 +4,40 @@
 <h1>Manual Triggers</h1>
 <p>Each action requires typing the trigger phrase verbatim.</p>
 
-{% for action, label, danger in [
-  ('tick', 'Trigger tick now', False),
-  ('finalize', 'Trigger finalize (compose + send)', True),
-  ('resend', 'Resend last sent bulletin', True),
-  ('skip-week', 'Skip this week (mark all current-week articles SKIPPED)', True),
+{% set actions = [
+  {
+    'action': 'tick',
+    'label': 'Trigger tick now',
+    'description': 'Runs the mid-week pipeline once: scrape new articles from active sources, classify them (Gemini), select the week picks if it is past Sunday 6am CT, and summarize. Does NOT send email. Safe to run anytime - useful for catching up if a scheduled tick was missed or to pull in late-breaking articles before finalize.',
+    'danger': false
+  },
+  {
+    'action': 'finalize',
+    'label': 'Trigger finalize (compose + send)',
+    'description': 'Composes the week summarized articles into the bulletin HTML and sends it via Gmail to the subscriber list. This is the normal Sunday 9pm CT job. Run manually when you need to re-fire after a failed send, or to send early. Sends real email.',
+    'danger': true
+  },
+  {
+    'action': 'resend',
+    'label': 'Resend last sent bulletin',
+    'description': 'Re-sends the most recent bulletin (status SENT, ordered by sent_at DESC) to the subscriber list with no changes. Same HTML, same subject. Use when the original delivery had an issue or someone needs a fresh copy. Sends real email - subscribers will get a duplicate.',
+    'danger': true
+  },
+  {
+    'action': 'skip-week',
+    'label': 'Skip this week (mark all current-week articles SKIPPED)',
+    'description': 'Marks every current-week article still in SCRAPED, CLASSIFIED, SELECTED, or SUMMARIZED state as SKIPPED. Next finalize will find nothing to compose, so no bulletin goes out for this week. Use when the week is light or you want to take a week off. Irreversible without manual DB editing.',
+    'danger': true
+  }
 ] %}
+
+{% for a in actions %}
 <section>
-<h2>{{ label }}</h2>
-<form action="/manual/{{ action }}" method="post">
+<h2>{{ a.label }}</h2>
+<p class="action-desc">{{ a.description }}</p>
+<form action="/manual/{{ a.action }}" method="post">
 <label>Trigger phrase: <input type="password" name="phrase" required></label>
-<button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-safe{% endif %}">Execute</button>
+<button type="submit" class="btn {% if a.danger %}btn-danger{% else %}btn-safe{% endif %}">Execute</button>
 </form>
 </section>
 {% endfor %}
