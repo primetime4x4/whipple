@@ -8,6 +8,25 @@ from whipple.pipeline import scrape as scrape_mod
 from config import SECTION_DISPLAY
 
 
+def _linkify_source(text: str, source_name: str, article_url: str) -> str:
+    """Wrap the trailing source attribution in an anchor tag.
+
+    Gemini is instructed to end summaries with " (Source Name)". We replace
+    the last occurrence of that token with a hyperlinked version pointing
+    to the article URL, so the bulletin renders Tom Whipple-style "(Source)"
+    citations as clickable links. If the model never inlined the
+    attribution, we append a linked one.
+    """
+    if not article_url or not source_name:
+        return text
+    linked = f'<a href="{article_url}" target="_blank" rel="noopener">{source_name}</a>'
+    tag = f'({source_name})'
+    if tag in text:
+        head, _, tail = text.rpartition(tag)
+        return f'{head}({linked}){tail}'
+    return f'{text} ({linked})'
+
+
 def summarize(session, batch_size: int = 5, gemini: GeminiClient = None) -> dict:
     if gemini is None:
         gemini = GeminiClient()
@@ -35,7 +54,9 @@ def summarize(session, batch_size: int = 5, gemini: GeminiClient = None) -> dict
             model = 'gemini-2.5-flash-lite' if art.section == 'briefs' else 'gemini-2.5-flash'
             text = gemini.call(model=model, prompt=prompt, stage='summarize',
                                article_id=art.id)
-            art.summary_text = text.strip()
+            text = text.strip()
+            text = _linkify_source(text, src.name, art.url)
+            art.summary_text = text
             art.state = 'SUMMARIZED'
             art.summarized_at = datetime.utcnow()
             summarized += 1
