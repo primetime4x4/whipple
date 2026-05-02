@@ -1,19 +1,57 @@
-"""compose() stage - single big Gemini Pro call assembles full bulletin."""
-import json
+"""compose() stage - assembles the bulletin from SUMMARIZED articles.
+
+Pure deterministic: groups summaries by section, renders h2 + paragraphs,
+returns. No LLM call. Earlier attempts to keep an LLM in compose (full
+bulletin generation, then just quote extraction) hit timeouts on gemma3:4b
+and ate Gemini quota. The summaries already have source attribution and
+inline links from the summarize stage, so deterministic stitching is enough
+to produce a complete bulletin.
+
+Quotes of the Week and Graphic of the Week sections are skipped for now;
+they can be added later via heuristic extraction from raw_content (regex
+for quoted sentences, regex for first <img>) without an LLM call.
+"""
 from datetime import datetime
 from sqlalchemy import select as sa_select
 from whipple.models import Article, Bulletin, Source
 from whipple.services.gemini import GeminiClient
 from whipple.services.render import render_bulletin, save_archive
-from whipple.prompts.compose import render_compose_prompt
 from whipple.pipeline import scrape as scrape_mod
+from config import SECTION_DISPLAY
+
+
+SECTION_ORDER = [
+    'energy_prices', 'geopolitical', 'climate', 'global_economy',
+    'renewables', 'briefs',
+]
+
+
+def _render_assembled_html(summaries_by_section: dict) -> str:
+    """Build the bulletin body HTML deterministically from per-section summaries."""
+    parts = []
+    section_keys = [k for k in SECTION_ORDER if k in summaries_by_section]
+    for k in summaries_by_section:
+        if k not in section_keys:
+            section_keys.append(k)
+
+    for section in section_keys:
+        items = summaries_by_section[section]
+        if not items:
+            continue
+        display = SECTION_DISPLAY.get(section, section)
+        parts.append(f'<h2>{display}</h2>')
+        if section == 'briefs':
+            parts.append('<ul class="briefs">')
+            for s in items:
+                parts.append(f'<li>{s}</li>')
+            parts.append('</ul>')
+        else:
+            for s in items:
+                parts.append(f'<p>{s}</p>')
+    return '\n'.join(parts)
 
 
 def compose(session, gemini: GeminiClient = None) -> dict:
-    """Compose bulletin from all SUMMARIZED articles for current week."""
-    if gemini is None:
-        gemini = GeminiClient()
-
     week = scrape_mod.current_sunday_ct()
 
     rows = session.execute(
@@ -27,43 +65,29 @@ def compose(session, gemini: GeminiClient = None) -> dict:
         return {'composed': 0, 'reason': 'no SUMMARIZED articles for current week'}
 
     summaries_by_section = {}
-    corpus = []
     for art, src in rows:
         summaries_by_section.setdefault(art.section, []).append(art.summary_text)
-        corpus.append({'url': art.url, 'title': art.title or '',
-                       'content': (art.raw_content or '')[:1500]})
 
-    prompt = render_compose_prompt(week, summaries_by_section, corpus)
-    raw = gemini.call(model='gemini-2.5-flash', prompt=prompt, stage='compose')
+    assembled_html = _render_assembled_html(summaries_by_section)
 
-    # Strip code fences if Gemini added them
-    raw = raw.strip()
-    if raw.startswith('```'):
-        raw = raw.split(chr(10), 1)[1].rsplit('```', 1)[0].strip()
-
-    parsed = json.loads(raw)
-
-    # Compute counts
     article_count = sum(len(v) for v in summaries_by_section.values())
     total_words = sum(len((s or '').split()) for s in
                       [a.summary_text for a, _ in rows])
 
     html = render_bulletin(
         week_of=week,
-        assembled_html=parsed.get('html', ''),
-        quote_a=parsed.get('quote_a'),
-        quote_b=parsed.get('quote_b'),
-        graphic_url=parsed.get('graphic_url'),
-        graphic_caption=parsed.get('graphic_caption'),
+        assembled_html=assembled_html,
+        quote_a=None,
+        quote_b=None,
+        graphic_url=None,
+        graphic_caption=None,
         article_count=article_count,
         total_word_count=total_words,
     )
 
     bulletin = Bulletin(
         week_of=week, status='COMPOSED', generated_at=datetime.utcnow(),
-        html_content=html, quote_a=parsed.get('quote_a'),
-        quote_b=parsed.get('quote_b'), graphic_url=parsed.get('graphic_url'),
-        graphic_caption=parsed.get('graphic_caption'),
+        html_content=html,
         article_count=article_count, total_word_count=total_words,
     )
     session.add(bulletin); session.flush()
