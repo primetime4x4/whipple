@@ -40,7 +40,7 @@ def test_summarize_uses_flash_for_briefs(session, monkeypatch):
 
     summarize(session, gemini=fake_gemini)
     call_kwargs = fake_gemini.call.call_args.kwargs
-    assert call_kwargs['model'] == 'gemini-1.5-flash'
+    assert call_kwargs['model'] == 'gemini-2.5-flash-lite'
 
 
 def test_summarize_uses_pro_for_narrative(session, monkeypatch):
@@ -57,4 +57,4 @@ def test_summarize_uses_pro_for_narrative(session, monkeypatch):
 
     summarize(session, gemini=fake_gemini)
     call_kwargs = fake_gemini.call.call_args.kwargs
-    assert call_kwargs['model'] == 'gemini-1.5-pro'
+    assert call_kwargs['model'] == 'gemini-2.5-flash'

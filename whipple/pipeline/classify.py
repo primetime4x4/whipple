@@ -30,7 +30,7 @@ def classify(session, batch_size: int = 10, gemini: GeminiClient = None) -> dict
     for art in arts:
         try:
             prompt = render_classify_prompt(art.title, art.raw_content)
-            resp = gemini.call(model='gemini-1.5-flash', prompt=prompt,
+            resp = gemini.call(model='gemini-2.5-flash-lite', prompt=prompt,
                               stage='classify', article_id=art.id)
             section_raw = resp.strip().lower()
             if section_raw not in VALID_SECTIONS_OR_IRRELEVANT:

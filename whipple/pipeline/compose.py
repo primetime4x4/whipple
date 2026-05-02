@@ -34,7 +34,7 @@ def compose(session, gemini: GeminiClient = None) -> dict:
                        'content': (art.raw_content or '')[:1500]})
 
     prompt = render_compose_prompt(week, summaries_by_section, corpus)
-    raw = gemini.call(model='gemini-1.5-pro', prompt=prompt, stage='compose')
+    raw = gemini.call(model='gemini-2.5-flash', prompt=prompt, stage='compose')
 
     # Strip code fences if Gemini added them
     raw = raw.strip()

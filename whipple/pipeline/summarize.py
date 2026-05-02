@@ -32,7 +32,7 @@ def summarize(session, batch_size: int = 5, gemini: GeminiClient = None) -> dict
                 section_display=section_display,
             )
             # Briefs use Flash; narrative sections use Pro
-            model = 'gemini-1.5-flash' if art.section == 'briefs' else 'gemini-1.5-pro'
+            model = 'gemini-2.5-flash-lite' if art.section == 'briefs' else 'gemini-2.5-flash'
             text = gemini.call(model=model, prompt=prompt, stage='summarize',
                                article_id=art.id)
             art.summary_text = text.strip()
