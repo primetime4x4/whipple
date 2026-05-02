@@ -21,6 +21,9 @@
 - [ ] **Per-source RSS feed health page** - /sources already shows `last_success` and `consecutive_failures`, but a dedicated health page with item-arrival timeline per source would help diagnose stale/dead feeds.
 - [ ] **Section-level regenerate UI** - If a bulletin has a bad section, allow regenerating just that section without re-running the whole compose stage. Requires partial-regenerate support in `compose()`.
 - [ ] **Public archive viewer at whipple.lfconnect.vip** - Currently /archives is LAN-only at 192.168.86.204:28813. Could expose via NPM if Dillon ever wants to share past bulletins externally.
+- [ ] **Location subgrouping within sections** - Tom Whipple sometimes grouped Energy prices and Geopolitical news by region (US, Russia, Middle East, Australia, etc). Two paths: (a) heuristic regex over summary_text using a curated keyword list - cheap, deterministic, ~80% coverage; (b) add location column to Article model, extract during summarize via prompt extension, more accurate but needs DB migration. Defer until the bulletin format feels cramped without it.
+- [ ] **LLM-based newsworthiness ranking** - Current select() uses recency * source.weight + diversity penalty, no judgment of how consequential the article actually is. Two approaches: (a) extend classify prompt to also return importance 1-5, fold into score (zero extra calls); (b) batch-rank candidates per section via one Ollama call between classify and select. Defer until source weights stop encoding most of the editorial judgment we need.
+- [ ] **Quotes of the Week + Graphic of the Week** - Removed from compose 2026-05-02 when it became fully deterministic (gemma3:4b was too slow to generate them in the same call as bulletin HTML). Re-add as separate small Ollama call (just summaries, ~30s) or via heuristic regex (find sentences with quotation marks, find first <img> in raw_content). Skipped because optional polish, not core.
 
 ## Done
 
