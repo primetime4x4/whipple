@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="settings-wrap">
+
+  <div>
+    <h1>Settings</h1>
+    <div class="settings-sub">Theme settings are saved per-browser in localStorage. Pick a preset, then tweak.</div>
+  </div>
+
+  <section class="settings-section">
+    <h2>Presets</h2>
+    <div class="preset-grid" id="presets"></div>
+  </section>
+
+  <section class="settings-section">
+    <h2>Palette</h2>
+    <div class="row"><label>Page bg</label><input type="color" id="c-page-bg"><span class="hex" id="h-page-bg"></span></div>
+    <div class="row"><label>Ink (text)</label><input type="color" id="c-ink"><span class="hex" id="h-ink"></span></div>
+    <div class="row"><label>Headline</label><input type="color" id="c-headline"><span class="hex" id="h-headline"></span></div>
+    <div class="row"><label>Accent</label><input type="color" id="c-accent"><span class="hex" id="h-accent"></span></div>
+    <div class="row"><label>Rule</label><input type="color" id="c-rule"><span class="hex" id="h-rule"></span></div>
+    <div class="row"><label>Muted</label><input type="color" id="c-muted"><span class="hex" id="h-muted"></span></div>
+  </section>
+
+  <section class="settings-section">
+    <h2>Typography</h2>
+    <div class="row" style="grid-template-columns: 110px 1fr;"><label>Headline</label>
+      <select id="f-headline">
+        <option value='Georgia, "Times New Roman", serif'>Georgia (default)</option>
+        <option value='"Playfair Display", Georgia, serif'>Playfair Display</option>
+        <option value='"Old Standard TT", Georgia, serif'>Old Standard TT</option>
+        <option value='"Source Serif 4", Georgia, serif'>Source Serif</option>
+        <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+      </select>
+    </div>
+    <div class="row" style="grid-template-columns: 110px 1fr;"><label>Body</label>
+      <select id="f-body">
+        <option value='Georgia, "Times New Roman", serif'>Georgia (default)</option>
+        <option value='"Lora", Georgia, serif'>Lora</option>
+        <option value='"Merriweather", Georgia, serif'>Merriweather</option>
+        <option value='"Source Serif 4", Georgia, serif'>Source Serif</option>
+        <option value='"Old Standard TT", Georgia, serif'>Old Standard TT</option>
+      </select>
+    </div>
+    <div class="row" style="grid-template-columns: 110px 1fr;"><label>UI / nav</label>
+      <select id="f-ui">
+        <option value='-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'>System sans (default)</option>
+        <option value='Georgia, serif'>Georgia (match body)</option>
+        <option value='"Source Serif 4", Georgia, serif'>Source Serif</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h2>Newspaper Flair</h2>
+    <div class="toggle-row"><label data-toggle="masthead">Masthead-style header</label><div class="switch" data-toggle="masthead"></div></div>
+    <div class="toggle-row"><label data-toggle="smallcapsNav">Small-caps nav links</label><div class="switch" data-toggle="smallcapsNav"></div></div>
+    <div class="toggle-row"><label data-toggle="h1Underline">Accent rule under page H1s</label><div class="switch" data-toggle="h1Underline"></div></div>
+    <div class="slider-row"><label>Rule weight</label><input type="range" id="rule-weight" min="1" max="4" step="1"><span class="val" id="v-rule">2px</span></div>
+  </section>
+
+  <section class="settings-section">
+    <h2>Preview (sample bulletin content)</h2>
+    <div class="settings-preview">
+      <h3>The Energy Bulletin Weekly</h3>
+      <div class="preview-meta">May 2, 2026 &middot; 47 stories &middot; 8,720 words</div>
+      <div class="preview-h2">Quotes of the Week</div>
+      <blockquote>"We are not running out of oil. We are running out of cheap, easy, low-carbon oil."</blockquote>
+      <div class="preview-h2">Energy Prices and Production</div>
+      <p>Brent settled the week at $84.20 a barrel, up roughly two percent on a tightening Atlantic basin. U.S. shale producers posted a third consecutive quarter of declining capital expenditure.</p>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h2>Manage</h2>
+    <div class="settings-actions">
+      <button class="btn btn-primary" id="reset">Reset to default (Newsprint Classic)</button>
+      <button class="btn" id="clear">Clear saved theme (use defaults)</button>
+    </div>
+    <div class="settings-sub" style="margin-top:0.5rem;">Bulletin emails (sent Monday mornings) keep their hardcoded styles for email-client compatibility. The theme applies to this website only.</div>
+  </section>
+
+</div>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<script>
+  const PRESETS = [
+    {
+      key: 'newsprint',
+      name: 'Newsprint Classic',
+      tag: 'cream + brick (default)',
+      colors: { 'page-bg': '#f5f1e8', ink: '#1a1a1a', headline: '#1a1a1a', accent: '#c0392b', rule: '#d4cfc1', muted: '#6b6b6b' },
+      flags: { masthead: false, smallcapsNav: false, h1Underline: true },
+      ruleWeight: 2,
+      headlineFont: 'Georgia, "Times New Roman", serif',
+      bodyFont: 'Georgia, "Times New Roman", serif',
+      uiFont: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'
+    },
+    {
+      key: 'ft',
+      name: 'FT Salmon',
+      tag: 'pink paper, navy ink',
+      colors: { 'page-bg': '#fff1e5', ink: '#33302e', headline: '#33302e', accent: '#990f3d', rule: '#e9dfcf', muted: '#66605c' },
+      flags: { masthead: true, smallcapsNav: true, h1Underline: false },
+      ruleWeight: 2,
+      headlineFont: '"Playfair Display", Georgia, serif',
+      bodyFont: 'Georgia, "Times New Roman", serif',
+      uiFont: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'
+    },
+    {
+      key: 'nyt',
+      name: 'NYT Modern',
+      tag: 'white + royal blue',
+      colors: { 'page-bg': '#ffffff', ink: '#121212', headline: '#121212', accent: '#326891', rule: '#e2e2e2', muted: '#666666' },
+      flags: { masthead: false, smallcapsNav: true, h1Underline: false },
+      ruleWeight: 1,
+      headlineFont: '"Old Standard TT", Georgia, serif',
+      bodyFont: 'Georgia, "Times New Roman", serif',
+      uiFont: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'
+    },
+    {
+      key: 'wsj',
+      name: 'WSJ Hunter',
+      tag: 'off-white + hunter green',
+      colors: { 'page-bg': '#fafaf5', ink: '#1a1a1a', headline: '#1a1a1a', accent: '#1d4d3a', rule: '#d8d6cb', muted: '#6b6b6b' },
+      flags: { masthead: true, smallcapsNav: true, h1Underline: false },
+      ruleWeight: 2,
+      headlineFont: 'Georgia, "Times New Roman", serif',
+      bodyFont: 'Georgia, "Times New Roman", serif',
+      uiFont: 'Georgia, serif'
+    },
+    {
+      key: 'lemonde',
+      name: 'Le Monde',
+      tag: 'pale blue + ink red',
+      colors: { 'page-bg': '#f0f4f8', ink: '#0c1c2e', headline: '#0c1c2e', accent: '#c8102e', rule: '#d0d8e2', muted: '#5e6e80' },
+      flags: { masthead: false, smallcapsNav: false, h1Underline: true },
+      ruleWeight: 2,
+      headlineFont: '"Playfair Display", Georgia, serif',
+      bodyFont: '"Source Serif 4", Georgia, serif',
+      uiFont: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif'
+    },
+    {
+      key: 'noir',
+      name: 'Editorial Noir',
+      tag: 'warm dark mode',
+      colors: { 'page-bg': '#1a1814', ink: '#e8e4d8', headline: '#f5f0e0', accent: '#d4a574', rule: '#3a342a', muted: '#8c867a' },
+      flags: { masthead: true, smallcapsNav: true, h1Underline: false },
+      ruleWeight: 1,
+      headlineFont: '"Playfair Display", Georgia, serif',
+      bodyFont: '"Lora", Georgia, serif',
+      uiFont: 'Georgia, serif'
+    }
+  ];
+
+  const STORAGE_KEY = 'whipple_theme';
+  const COLOR_KEYS = ['page-bg', 'ink', 'headline', 'accent', 'rule', 'muted'];
+  const DEFAULT_KEY = 'newsprint';
+
+  // State - start from saved theme or default
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const merged = JSON.parse(JSON.stringify(PRESETS[0]));
+        if (saved.colors) Object.assign(merged.colors, saved.colors);
+        if (saved.flags) Object.assign(merged.flags, saved.flags);
+        if (saved.headlineFont) merged.headlineFont = saved.headlineFont;
+        if (saved.bodyFont) merged.bodyFont = saved.bodyFont;
+        if (saved.uiFont) merged.uiFont = saved.uiFont;
+        if (saved.ruleWeight) merged.ruleWeight = saved.ruleWeight;
+        if (saved.presetKey) merged.key = saved.presetKey;
+        return merged;
+      }
+    } catch (e) { /* corrupt - fall through */ }
+    return JSON.parse(JSON.stringify(PRESETS[0]));
+  }
+
+  const state = loadState();
+  let activePresetKey = state.key || null;
+
+  // Build preset cards (safe DOM construction)
+  const presetGrid = document.getElementById('presets');
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'preset' + (p.key === activePresetKey ? ' active' : '');
+    btn.dataset.key = p.key;
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'preset-name';
+    nameDiv.textContent = p.name;
+    btn.appendChild(nameDiv);
+
+    const swatchRow = document.createElement('div');
+    swatchRow.className = 'preset-swatches';
+    ['page-bg', 'ink', 'headline', 'accent'].forEach(k => {
+      const sw = document.createElement('span');
+      sw.className = 'preset-swatch';
+      sw.style.background = p.colors[k];
+      swatchRow.appendChild(sw);
+    });
+    btn.appendChild(swatchRow);
+
+    const tagDiv = document.createElement('div');
+    tagDiv.className = 'preset-tag';
+    tagDiv.textContent = p.tag;
+    btn.appendChild(tagDiv);
+
+    btn.addEventListener('click', () => applyPreset(p.key));
+    presetGrid.appendChild(btn);
+  });
+
+  function applyPreset(key) {
+    const p = PRESETS.find(x => x.key === key);
+    if (!p) return;
+    Object.assign(state.colors, p.colors);
+    Object.assign(state.flags, p.flags);
+    state.ruleWeight = p.ruleWeight;
+    state.headlineFont = p.headlineFont;
+    state.bodyFont = p.bodyFont;
+    state.uiFont = p.uiFont;
+    activePresetKey = key;
+    syncControls();
+    render();
+    save();
+  }
+
+  function syncControls() {
+    document.querySelectorAll('.preset').forEach(el => {
+      el.classList.toggle('active', el.dataset.key === activePresetKey);
+    });
+    COLOR_KEYS.forEach(k => {
+      document.getElementById('c-' + k).value = state.colors[k];
+      document.getElementById('h-' + k).textContent = state.colors[k].toUpperCase();
+    });
+    document.getElementById('f-headline').value = state.headlineFont;
+    document.getElementById('f-body').value = state.bodyFont;
+    document.getElementById('f-ui').value = state.uiFont;
+    document.getElementById('rule-weight').value = state.ruleWeight;
+    document.getElementById('v-rule').textContent = state.ruleWeight + 'px';
+    Object.keys(state.flags).forEach(k => {
+      const sw = document.querySelector('.switch[data-toggle="' + k + '"]');
+      if (sw) sw.classList.toggle('on', state.flags[k]);
+    });
+  }
+
+  function render() {
+    const r = document.documentElement;
+    COLOR_KEYS.forEach(k => r.style.setProperty('--' + k, state.colors[k]));
+    r.style.setProperty('--rule-w', state.ruleWeight + 'px');
+    r.style.setProperty('--headline-font', state.headlineFont);
+    r.style.setProperty('--body-font', state.bodyFont);
+    r.style.setProperty('--ui-font', state.uiFont);
+    r.classList.toggle('theme-masthead', !!state.flags.masthead);
+    r.classList.toggle('theme-smallcaps-nav', !!state.flags.smallcapsNav);
+    r.classList.toggle('theme-h1-rule', !!state.flags.h1Underline);
+  }
+
+  function save() {
+    const payload = {
+      colors: state.colors,
+      flags: state.flags,
+      headlineFont: state.headlineFont,
+      bodyFont: state.bodyFont,
+      uiFont: state.uiFont,
+      ruleWeight: state.ruleWeight,
+      presetKey: activePresetKey
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch (e) { /* ignore */ }
+  }
+
+  function clearActivePreset() {
+    activePresetKey = null;
+    document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+  }
+
+  COLOR_KEYS.forEach(k => {
+    const el = document.getElementById('c-' + k);
+    el.addEventListener('input', () => {
+      state.colors[k] = el.value;
+      document.getElementById('h-' + k).textContent = el.value.toUpperCase();
+      clearActivePreset();
+      render();
+      save();
+    });
+  });
+
+  ['f-headline', 'f-body', 'f-ui'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      const map = { 'f-headline': 'headlineFont', 'f-body': 'bodyFont', 'f-ui': 'uiFont' };
+      state[map[id]] = e.target.value;
+      clearActivePreset();
+      render();
+      save();
+    });
+  });
+
+  document.querySelectorAll('.switch[data-toggle], label[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.toggle;
+      state.flags[key] = !state.flags[key];
+      clearActivePreset();
+      syncControls();
+      render();
+      save();
+    });
+  });
+
+  document.getElementById('rule-weight').addEventListener('input', e => {
+    state.ruleWeight = parseInt(e.target.value);
+    document.getElementById('v-rule').textContent = state.ruleWeight + 'px';
+    clearActivePreset();
+    render();
+    save();
+  });
+
+  document.getElementById('reset').addEventListener('click', () => applyPreset(DEFAULT_KEY));
+
+  document.getElementById('clear').addEventListener('click', () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    location.reload();
+  });
+
+  // Initial paint - state was already applied by base.html bootstrap, but
+  // make sure controls match and any preset highlighting is correct.
+  syncControls();
+  render();
+</script>
+{% endblock %}

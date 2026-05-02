@@ -1,7 +1,7 @@
 """Flask factory."""
 from flask import Flask
 from whipple.db import init_db
-from whipple.routes import health, sources, archives, manual, rss
+from whipple.routes import health, sources, archives, manual, rss, settings
 import config
 
 
@@ -14,6 +14,7 @@ def create_app():
     app.register_blueprint(archives.bp)
     app.register_blueprint(manual.bp)
     app.register_blueprint(rss.bp)
+    app.register_blueprint(settings.bp)
     return app
 
 

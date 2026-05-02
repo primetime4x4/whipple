@@ -5,6 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 <title>{% block title %}Whipple{% endblock %} - Energy Bulletin</title>
+<script>
+  // Theme bootstrap - reads localStorage and applies CSS vars + classes
+  // before paint to prevent flash of default theme.
+  (function () {
+    try {
+      var raw = localStorage.getItem('whipple_theme');
+      if (!raw) return;
+      var t = JSON.parse(raw);
+      var r = document.documentElement;
+      if (t.colors) {
+        for (var k in t.colors) {
+          r.style.setProperty('--' + k, t.colors[k]);
+        }
+      }
+      if (t.headlineFont) r.style.setProperty('--headline-font', t.headlineFont);
+      if (t.bodyFont) r.style.setProperty('--body-font', t.bodyFont);
+      if (t.uiFont) r.style.setProperty('--ui-font', t.uiFont);
+      if (t.ruleWeight) r.style.setProperty('--rule-w', t.ruleWeight + 'px');
+      if (t.flags) {
+        if (t.flags.masthead) r.classList.add('theme-masthead');
+        if (t.flags.smallcapsNav) r.classList.add('theme-smallcaps-nav');
+        if (t.flags.h1Underline) r.classList.add('theme-h1-rule');
+      }
+    } catch (e) { /* corrupt localStorage - ignore, use defaults */ }
+  })();
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
@@ -14,7 +40,20 @@
   <a href="/sources">Sources</a>
   <a href="/health">Health</a>
   <a href="/manual">Manual</a>
+  <a href="/settings" style="margin-left:auto;font-size:0.85rem;">Settings</a>
 </nav>
+<header class="masthead">
+  <div class="title">The Whipple Report</div>
+  <div class="vol">Energy Bulletin Weekly</div>
+  <nav class="masthead-nav">
+    <a href="/">Bulletin</a>
+    <a href="/archives">Archives</a>
+    <a href="/sources">Sources</a>
+    <a href="/health">Health</a>
+    <a href="/manual">Manual</a>
+    <a href="/settings">Settings</a>
+  </nav>
+</header>
 <main>{% block content %}{% endblock %}</main>
 </body>
 </html>
