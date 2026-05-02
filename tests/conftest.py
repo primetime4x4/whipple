@@ -6,6 +6,19 @@ from sqlalchemy.orm import sessionmaker
 from whipple.models import Base
 
 
+@pytest.fixture(autouse=True)
+def _no_ollama(monkeypatch):
+    """Disable the Ollama path by default in all tests.
+
+    classify and summarize call Ollama first when OLLAMA_URL is set, falling
+    back to Gemini on failure. Tests mock Gemini, not Ollama, so they need the
+    Ollama path skipped to exercise the Gemini code path. Tests that want to
+    exercise the Ollama path can override this fixture by re-patching OLLAMA_URL.
+    """
+    import config
+    monkeypatch.setattr(config, 'OLLAMA_URL', '', raising=False)
+
+
 @pytest.fixture
 def session():
     engine = create_engine("sqlite:///:memory:", future=True)
