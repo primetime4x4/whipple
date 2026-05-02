@@ -30,15 +30,17 @@ Return JSON with this exact structure:
   "html": "...full bulletin HTML..."
 }}
 
-The HTML uses these section headers in this order:
-1. Quotes of the Week
-2. Graphic of the Week (omit section entirely if graphic_url is null)
-3. Energy prices and production
-4. Geopolitical instability
-5. Climate change
-6. The global economy
-7. Renewables and new technologies
-8. The Briefs
+The html field MUST contain ONLY the narrative sections in this order:
+1. Energy prices and production
+2. Geopolitical instability
+3. Climate change
+4. The global economy
+5. Renewables and new technologies
+6. The Briefs
+
+Do NOT include a Quotes of the Week section or a Graphic of the Week section in the html
+field - those are rendered separately by the wrapper template from quote_a/quote_b/graphic_url.
+Including them in html will cause them to appear twice in the final bulletin.
 
 Each narrative section is `<h2>` followed by paragraphs (one `<p>` per story).
 The Briefs section is `<h2>The Briefs</h2>` followed by `<ul><li>` items.
