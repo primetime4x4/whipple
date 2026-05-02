@@ -109,6 +109,17 @@
   .reset-link:hover { text-decoration: underline; }
 </style>
 
+{% set state_tooltips = {
+  'SCRAPED':    'Just fetched from the source. Has raw content but no classification yet.',
+  'CLASSIFIED': 'Gemini has read it and assigned a section + relevance score. Awaiting weekly selection.',
+  'IRRELEVANT': 'Gemini decided this article is not on-topic for the bulletin. Will not appear.',
+  'SELECTED':   'Picked by the weekly select pass for inclusion in this week bulletin. Awaiting summarization.',
+  'SUMMARIZED': 'Gemini has written a summary. Ready for the finalize compose step.',
+  'COMPOSED':   'Included in a sent or composed bulletin (see Archives).',
+  'SKIPPED':    'Manually skipped (via Skip this week) or auto-skipped after the bulletin sent without it.',
+  'FAILED':     'Pipeline error during scrape, classify, or summarize. Check error_message in the DB.'
+} %}
+
 <h1>Articles</h1>
 
 <form method="get" class="articles-filters">
@@ -179,7 +190,7 @@
             {% endif %}
           </td>
           <td class="col-source">{{ a.source.name if a.source else '-' }}</td>
-          <td><span class="state-pill state-{{ a.state }}">{{ a.state }}</span></td>
+          <td><span class="state-pill state-{{ a.state }}" title="{{ state_tooltips.get(a.state, a.state) }}">{{ a.state }}</span></td>
           <td class="col-section">{{ a.section or '-' }}</td>
           <td class="col-score">{{ '%.2f'|format(a.score) if a.score is not none else '-' }}</td>
           <td class="col-week">{{ a.week_of }}</td>
