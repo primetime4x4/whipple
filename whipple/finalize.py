@@ -43,7 +43,7 @@ def main():
         # Send the bulletin
         week = current_sunday_ct()
         bulletin = session.query(Bulletin).filter_by(week_of=week).first()
-        subject = f'Energy Bulletin Weekly - {datetime.fromisoformat(week).strftime(%B %-d, %Y)}'
+        subject = f'Energy Bulletin Weekly - {datetime.fromisoformat(week).strftime("%B %-d, %Y")}'
         msg_id = send_bulletin(subject=subject, html=bulletin.html_content)
 
         bulletin.status = 'SENT'
@@ -53,7 +53,7 @@ def main():
         session.commit()
 
         _notify('info', 'Whipple bulletin sent',
-                f'{r[composed]} articles, {bulletin.total_word_count} words. Gmail msg id: {msg_id}.')
+                f'{r["composed"]} articles, {bulletin.total_word_count} words. Gmail msg id: {msg_id}.')
     except Exception as e:
         run.success = 0
         run.error_message = str(e)[:500]
